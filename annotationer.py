@@ -3,9 +3,13 @@ import requests
 import json
 import argparse
 
+# TODO:
+# [ ] Fix whatever the problem is when adding the Epoch time in argument and POSTing it, last error was 500.
+
 parser = argparse.ArgumentParser(description='POST Events to Graphite API')
 parser.add_argument('-ip', nargs='+', default=None, required=True, help='IP address(es) to the Graphite host(s).')
 parser.add_argument('-w', default=None, required=True, help='What is this event about?')
+parser.add_argument('-e', default=None, type=int, required=False, help='The time of the event in Epoch. Default time stamp will be the time when you sent the POST.')
 parser.add_argument('-t', nargs='+', default=None, required=True, help='Descriptive and whitespace seperated tags that will be searchable.')
 args = parser.parse_args()
 
@@ -32,14 +36,21 @@ def sendAnnotation(payload):
         if connectTest(host):
             headers = {'content-type': 'application/json'}
             url = 'http://' + host + '/events/'
-            r = requests.post(url, data = json.dumps(payload), headers = headers)
-            if r.status_code == 200:
-                print '200 OK'
-            else:
-                print r.status_code
+            try:
+                r = requests.post(url, data = json.dumps(payload), headers = headers)
+                print payload
+                if r.status_code == 200:
+                    print '200 OK'
+                else:
+                    print 'Error: ' + str(r.status_code), str(r.reason)
+            except Exception as e:
+                print e.message
 
 # Main
 if __name__ == "__main__":
+    
+    if not args.e == None:
+        buildPayload('when', args.e)
     buildPayload('what', args.w)
     buildPayload('tags', ' '.join(args.t))
 
