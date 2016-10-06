@@ -3,9 +3,6 @@ import requests
 import json
 import argparse
 
-# TODO:
-# [ ] Fix whatever the problem is when adding the Epoch time in argument and POSTing it, last error was 500.
-
 parser = argparse.ArgumentParser(description='POST Events to Graphite API')
 parser.add_argument('-ip', nargs='+', default=None, required=True, help='IP address(es) to the Graphite host(s).')
 parser.add_argument('-w', default=None, required=True, help='What is this event about?')
@@ -28,7 +25,7 @@ def connectTest(ip):
         return False
 
 def buildPayload(key, value):
-    jsondict[str(key)] = str(value)
+    jsondict[str(key)] = value
     return jsondict
 
 def sendAnnotation(payload):
@@ -37,8 +34,7 @@ def sendAnnotation(payload):
             headers = {'content-type': 'application/json'}
             url = 'http://' + host + '/events/'
             try:
-                r = requests.post(url, data = json.dumps(payload), headers = headers)
-                print payload
+                r = requests.post(url, data = json.dumps(payload), headers=headers)
                 if r.status_code == 200:
                     print '200 OK'
                 else:
